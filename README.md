@@ -123,6 +123,9 @@ bash scripts/track_video_pixel3dmm.sh --help
 # Process a directory of (reference) images
 bash scripts/track_video_pixel3dmm.sh examples/input/felix/images/cam0/ examples/output/custom/reference_tracking/
 
+# Optional: cap number of reference frames (useful for Colab runtime)
+bash scripts/track_video_pixel3dmm.sh examples/input/felix/images/cam0/ examples/output/custom/reference_tracking/ --max_n_ref 48
+
 # Optional: process a driving (or reference) video
 bash scripts/track_video_pixel3dmm.sh examples/input/animation/example_video.mp4 examples/output/custom/driving_video_tracking/
 ```
@@ -179,6 +182,45 @@ Open the [real-time viewer](https://felixtaubner.github.io/cap4d/viewer/) in you
 upload the exported animation found in 
 `examples/output/custom/animation_00/exported_animation.ply` or
 `examples/output/custom/animation_example/exported_animation.ply`.
+
+## 🧊 Static Avatar For Unity (Colab)
+
+If you only need a static head avatar (no animation), use the static pipeline script and export a standard 3DGS-style `.ply` for Unity splat renderers.
+
+### 1) Run on your own short head-turn video
+
+```bash
+export PIXEL3DMM_PATH=/content/pixel3dmm
+export CAP4D_PATH=/content/cap4d
+
+# quality: balanced | max | debug
+bash scripts/generate_static_avatar.sh /content/my_head_video.mp4 /content/cap4d/examples/output/custom_static balanced --max_n_ref 48 --timestep 0
+```
+
+Expected output:
+`/content/cap4d/examples/output/custom_static/raw_static.ply`
+
+### 2) Export from an existing trained avatar
+
+```bash
+python gaussianavatars/export_static_ply.py \
+  --model_path examples/output/custom_static/avatar/ \
+  --source_paths examples/output/custom_static/mmdm/reference_images/ examples/output/custom_static/mmdm/generated_images/ \
+  --output_ply examples/output/custom_static/raw_static.ply \
+  --timestep 0
+```
+
+### 3) Colab notebook
+
+Use `notebooks/colab_static_avatar.ipynb` for an end-to-end Colab workflow:
+- dependency install
+- FLAME credential setup
+- model/weight download
+- Pixel3DMM install
+- custom video upload
+- static avatar generation and `.ply` download
+
+`QUALITY` in the notebook defaults to `balanced`; switch to `max` for higher quality.
 
 ## 📚 Related Resources
 
