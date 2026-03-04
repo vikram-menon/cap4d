@@ -32,6 +32,38 @@ git clone https://github.com/SimonGiebenhain/pixel3dmm/ $PIXEL3DMM_PATH
 cd $PIXEL3DMM_PATH
 git checkout 98b5d79f18bc478282494be02f984dc93f5c9fe9
 
+# compatibility patches for newer PyTorch/Lightning + robust facer indexing
+python3 - <<'PY'
+from pathlib import Path
+
+# torch>=2.6 changed default torch.load(weights_only=True), which breaks these ckpts
+network_inference = Path("scripts/network_inference.py")
+old = "load_from_checkpoint(model_checkpoint, strict=False)"
+new = "load_from_checkpoint(model_checkpoint, strict=False, weights_only=False)"
+s = network_inference.read_text()
+if old in s:
+    network_inference.write_text(s.replace(old, new))
+    print(f"Patched {network_inference}: weights_only=False")
+else:
+    print(f"Skip patch {network_inference}: pattern not found")
+
+# guard against invalid image indices produced by facer detections
+facer_seg = Path("scripts/run_facer_segmentation.py")
+needle = "frame = frame_idx_batch[_iidx]"
+replacement = (
+    "idx = int(_iidx)\n"
+    "            if idx < 0 or idx >= len(frame_idx_batch):\n"
+    "                continue\n"
+    "            frame = frame_idx_batch[idx]"
+)
+s = facer_seg.read_text()
+if needle in s:
+    facer_seg.write_text(s.replace(needle, replacement))
+    print(f"Patched {facer_seg}: frame index bounds check")
+else:
+    print(f"Skip patch {facer_seg}: pattern not found")
+PY
+
 pip install git+https://github.com/NVlabs/nvdiffrast.git
 
 grep -v '^numpy' requirements.txt | pip install -r /dev/stdin
