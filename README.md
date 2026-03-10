@@ -222,6 +222,19 @@ Use `notebooks/colab_static_avatar.ipynb` for an end-to-end Colab workflow:
 
 `QUALITY` in the notebook defaults to `balanced`; switch to `max` for higher quality.
 
+### 4) Docker Jupyter workflow
+
+If you want to run the static-avatar notebook in a container and open Jupyter in your browser, use the provided Docker setup:
+
+```bash
+docker compose build
+docker compose up
+```
+
+Then open `http://localhost:8888/lab?token=cap4d` and launch `notebooks/changed_colab_static_avatar.ipynb`.
+
+This setup mounts the repo into the container, enables Jupyter terminals for shell commands, and keeps runtime files in a Docker volume. See `docs/docker-jupyter.md` for details.
+
 ## 📚 Related Resources
 
 The MMDM code is based on [ControlNet](https://github.com/lllyasviel/ControlNet). The 4D Gaussian avatar code is based on [GaussianAvatars](https://github.com/ShenhanQian/GaussianAvatars). Special thanks to the authors for making their code public!

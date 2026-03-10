@@ -1,0 +1,28 @@
+services:
+  cap4d-jupyter:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: cap4d-jupyter
+    ports:
+      - "${JUPYTER_PORT:-8888}:8888"
+    environment:
+      CAP4D_CONTAINERIZED: "1"
+      CAP4D_PATH: /workspace/cap4d
+      CAP4D_RUNTIME_ROOT: /workspace/runtime
+      PIXEL3DMM_PATH: /workspace/runtime/pixel3dmm
+      PYTHONPATH: /workspace/cap4d
+      JUPYTER_TOKEN: ${JUPYTER_TOKEN:-cap4d}
+      NVIDIA_VISIBLE_DEVICES: all
+      NVIDIA_DRIVER_CAPABILITIES: compute,utility
+    volumes:
+      - .:/workspace/cap4d
+      - cap4d_runtime:/workspace/runtime
+    working_dir: /workspace/cap4d
+    stdin_open: true
+    tty: true
+    shm_size: "16gb"
+    gpus: all
+
+volumes:
+  cap4d_runtime:
